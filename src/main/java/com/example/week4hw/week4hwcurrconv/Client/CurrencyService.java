@@ -3,9 +3,6 @@ package com.example.week4hw.week4hwcurrconv.Client;
 import com.example.week4hw.week4hwcurrconv.DTO.StatusDto;
 import com.example.week4hw.week4hwcurrconv.Entity.CurrencyRequest;
 import com.example.week4hw.week4hwcurrconv.Entity.CurrencyResponse;
-import com.example.week4hw.week4hwcurrconv.Entity.Status;
-
-import java.util.List;
 
 public interface CurrencyService {
 

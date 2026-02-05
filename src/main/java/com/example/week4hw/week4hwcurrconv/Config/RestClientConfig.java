@@ -1,6 +1,6 @@
 package com.example.week4hw.week4hwcurrconv.Config;
 
-import com.example.week4hw.week4hwcurrconv.Exception.ResourceNotFound;
+import com.example.week4hw.week4hwcurrconv.Exception.UnknownAPIException;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -18,17 +18,16 @@ public class RestClientConfig {
     private String BASE_URL;
 
 
-
     @Bean
     @Qualifier("getCurrencyServiceRestClient")
-    RestClient getCurrencyServiceRestClient(){
+    RestClient getCurrencyServiceRestClient() {
 
         return RestClient.builder()
                 .baseUrl(BASE_URL)
-                .defaultHeader(CONTENT_TYPE,APPLICATION_JSON_VALUE)
+                .defaultHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
                 .defaultStatusHandler(HttpStatusCode::is5xxServerError,
-                        (req, res)->{
-                            throw new ResourceNotFound(new String(res.getBody().readAllBytes()));
+                        (req, res) -> {
+                            throw new UnknownAPIException(new String(res.getBody().readAllBytes()));
                         })
                 .build();
 

@@ -7,8 +7,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class StatusMapper {
 
-    public StatusDto toDto(Status status){
+    public StatusDto toDto(Status status) {
         Long remaining = status.getQuotas().getMonth().getRemaining();
-        return StatusDto.of(status.getAccountId(),remaining);
+        return StatusDto.of(status.getAccountId(), remaining);
     }
 }

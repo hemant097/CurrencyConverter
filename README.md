@@ -2,8 +2,10 @@
 
 #### after running the application on localhost, hit the url http://localhost:8080/swagger-ui/index.html#/
 
-#####Getting the rates of currencies in terms of USD as default
-![SwaggerUICurrencyConverter](src/Images/image1.jpg)
+##### Getting the rates of currencies in terms of USD as default
 
-#####Converting a currency into another with the number of units
-![SwaggerUICurrencyConverter](src/Images/image2.jpg)
+![Rates_image](src/Images/image1.jpg)
+
+##### Converting a currency into another with the number of units
+
+![CurrencyConvert](src/Images/image2.jpg)

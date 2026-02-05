@@ -1,6 +1,6 @@
 package com.example.week4hw.week4hwcurrconv.Advice;
 
-import com.example.week4hw.week4hwcurrconv.Exception.ResourceNotFound;
+import com.example.week4hw.week4hwcurrconv.Exception.UnknownAPIException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -16,9 +16,8 @@ import java.util.stream.Collectors;
 public class GlobalExceptionHandler {
 
 
-
-    @ExceptionHandler(ResourceNotFound.class)
-    public ResponseEntity<APIError> resourceNotFound(ResourceNotFound rnf) {
+    @ExceptionHandler(UnknownAPIException.class)
+    public ResponseEntity<APIError> resourceNotFound(UnknownAPIException rnf) {
 
         String currDT = giveCurrentDateTime();
 
@@ -38,15 +37,15 @@ public class GlobalExceptionHandler {
         //getting all the binding errors from the exception and converting it to List<String> using stream
         List<String> errorList = manve.getBindingResult()
                 .getAllErrors()
-                .stream().map(error->error.getDefaultMessage())
+                .stream().map(error -> error.getDefaultMessage())
                 .collect(Collectors.toList());
 
-        String errors = String.join(", ",errorList);
+        String errors = String.join(", ", errorList);
 
         String dateAndTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd-MMM-yyyy HH:mm"));
         //using lombok builder
         APIError apiError = APIError.builder()
-                .message("Input validation failed ,"+ errors)
+                .message("Input validation failed ," + errors)
                 .httpStatus(HttpStatus.NOT_ACCEPTABLE)
                 .errorRecordedTime(dateAndTime)
                 .build();
@@ -69,7 +68,7 @@ public class GlobalExceptionHandler {
     }
 
     //returns current date and time when called
-    private String giveCurrentDateTime(){
+    private String giveCurrentDateTime() {
         return LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd-MMM-yyyy HH:mm"));
     }
 }

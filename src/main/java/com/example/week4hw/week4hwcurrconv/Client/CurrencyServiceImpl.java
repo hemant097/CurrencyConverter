@@ -4,7 +4,7 @@ import com.example.week4hw.week4hwcurrconv.DTO.StatusDto;
 import com.example.week4hw.week4hwcurrconv.Entity.CurrencyRequest;
 import com.example.week4hw.week4hwcurrconv.Entity.CurrencyResponse;
 import com.example.week4hw.week4hwcurrconv.Entity.Status;
-import com.example.week4hw.week4hwcurrconv.Exception.ResourceNotFound;
+import com.example.week4hw.week4hwcurrconv.Exception.UnknownAPIException;
 import com.example.week4hw.week4hwcurrconv.Mapper.StatusMapper;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -21,7 +21,7 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
-public class CurrencyServiceImpl implements CurrencyService{
+public class CurrencyServiceImpl implements CurrencyService {
 
     @Value("${apiKey}")
     private String API_KEY;
@@ -37,49 +37,60 @@ public class CurrencyServiceImpl implements CurrencyService{
         log.trace("trying to getStatus of status of this api");
 
         ResponseEntity<Status> responseObject =
-        restClient
-                .get()
-                .uri( uriBuilder -> uriBuilder
-                        .path("/status")
-                        .queryParam("apikey",API_KEY)
-                        .build())
-                .retrieve()
-                .onStatus(HttpStatusCode::is4xxClientError, (req, res)->{
+                restClient
+                        .get()
+                        .uri(uriBuilder -> uriBuilder
+                                .path("/status")
+                                .queryParam("apikey", API_KEY)
+                                .build())
+                        .retrieve()
+                        .onStatus(HttpStatusCode::is4xxClientError, (req, res) -> {
 
-                    log.error(new String(res.getBody().readAllBytes()));
-                    throw new ResourceNotFound("unable to get status");
-                })
-                .toEntity(new ParameterizedTypeReference<>() {
-                });
+                            log.error(new String(res.getBody().readAllBytes()));
+                            throw new UnknownAPIException("unable to get status");
+                        })
+                        .toEntity(new ParameterizedTypeReference<>() {
+                        });
 
 
-        Status status =  responseObject.getBody();
+        Status status = responseObject.getBody();
 
         log.debug("successfully received the status");
-        log.trace("retrieved status of thos : {}",status);
+        log.trace("retrieved status of this API : {}", status);
 
-         return statusMapper.toDto(status);
+        return statusMapper.toDto(status);
     }
 
     @Override
     public CurrencyResponse getCurrencyResponse(CurrencyRequest currencyRequest) {
+
+        log.trace("trying to get rates of provided currencies : {}",currencyRequest.getCurrencies());
 
         List<String> currencies = currencyRequest.getCurrencies();
 
         ResponseEntity<CurrencyResponse> responseObject =
                 restClient
                         .get()
-                        .uri( uriBuilder -> uriBuilder
+                        .uri(uriBuilder -> uriBuilder
                                 .path("/latest")
-                                .queryParam("apikey",API_KEY)
-                                .queryParam("currencies",String.join(",",currencies))
+                                .queryParam("apikey", API_KEY)
+                                .queryParam("currencies", String.join(",", currencies))
                                 .build())
                         .retrieve()
+                        .onStatus(HttpStatusCode::is4xxClientError, (req, res) -> {
+
+                            log.error(new String(res.getBody().readAllBytes()));
+                            throw new UnknownAPIException("unable to CurrencyResponse");
+                        })
                         .toEntity(new ParameterizedTypeReference<>() {
                         });
 
+        CurrencyResponse currencyResponse = responseObject.getBody();
 
-        return responseObject.getBody();
+        log.debug("successfully received the rates");
+        log.trace("retrieved rates of these currencies : {}", currencyResponse.getData());
+
+        return currencyResponse;
 
     }
 
@@ -89,25 +100,33 @@ public class CurrencyServiceImpl implements CurrencyService{
         ResponseEntity<CurrencyResponse> responseObject =
                 restClient
                         .get()
-                        .uri( uriBuilder -> uriBuilder
+                        .uri(uriBuilder -> uriBuilder
                                 .path("/latest")
-                                .queryParam("apikey",API_KEY)
-                                .queryParam("currencies",toCurrency)
-                                .queryParam("base_currency",fromCurrency)
+                                .queryParam("apikey", API_KEY)
+                                .queryParam("currencies", toCurrency)
+                                .queryParam("base_currency", fromCurrency)
                                 .build())
                         .retrieve()
+                        .onStatus(HttpStatusCode::is4xxClientError, (req, res) -> {
+
+                            log.error(new String(res.getBody().readAllBytes()));
+                            throw new UnknownAPIException("unable to convert this currency");
+                        })
                         .toEntity(new ParameterizedTypeReference<>() {
                         });
 
 
         if (responseObject.getBody() != null) {
-            Map<String,Double> currencies = responseObject.getBody().getData();
-            System.out.println(currencies);
+            Map<String, Double> currencies = responseObject.getBody().getData();
 
-            return currencies.get(toCurrency)*units;
+            Double convertedValue = currencies.get(toCurrency) * units;
+            log.debug("successfully converted the currency");
+            log.trace("converted currency value: {}", convertedValue);
+
+            return convertedValue;
         }
-        else
-            return 0.0;
+
+        return 0.0;
 
     }
 }
